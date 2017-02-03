@@ -1,0 +1,14 @@
+LCD_RS -> A5
+LCD_WR -> A4
+LCD_RD -> 3V3
+DB8 -> D0
+DB9 -> D1
+DB10 -> D2
+Touch_CLK -> A1
+DB11 -> D3
+Touch_CS -> GND
+DB12 -> D4
+Touch_DIN -> A0
+DB13 -> D15
+DB14 -> D6
+LCD_CS -> A3
