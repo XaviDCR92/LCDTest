@@ -3,29 +3,31 @@ LCDTest.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         00000262  00000000  00000000  00000094  2**1
+  0 .text         000005b6  00000000  00000000  00000094  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .data         00000000  00802000  00000262  000002f6  2**0
+  1 .data         00000000  00802000  000005b6  0000064a  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  2 .bss          000000c3  00802000  00802000  000002f6  2**0
+  2 .bss          00000006  00802000  00802000  0000064a  2**0
                   ALLOC
-  3 .comment      00000030  00000000  00000000  000002f6  2**0
+  3 .comment      00000030  00000000  00000000  0000064a  2**0
                   CONTENTS, READONLY
-  4 .debug_aranges 00000020  00000000  00000000  00000326  2**0
+  4 .debug_aranges 00000038  00000000  00000000  0000067a  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_info   000002eb  00000000  00000000  00000346  2**0
+  5 .debug_info   00000cc2  00000000  00000000  000006b2  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_abbrev 0000010e  00000000  00000000  00000631  2**0
+  6 .debug_abbrev 00000225  00000000  00000000  00001374  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_line   00000256  00000000  00000000  0000073f  2**0
+  7 .debug_line   00000519  00000000  00000000  00001599  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_frame  00000024  00000000  00000000  00000998  2**2
+  8 .debug_frame  00000088  00000000  00000000  00001ab4  2**2
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_str    00017cd4  00000000  00000000  000009bc  2**0
+  9 .debug_str    00018362  00000000  00000000  00001b3c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_ranges 00000010  00000000  00000000  00018690  2**0
+ 10 .debug_loc    000000ea  00000000  00000000  00019e9e  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_macro  00006f1c  00000000  00000000  000186a0  2**0
+ 11 .debug_ranges 00000028  00000000  00000000  00019f88  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_macro  000070f1  00000000  00000000  00019fb0  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -306,64 +308,579 @@ Disassembly of section .text:
  214:	1d 92       	st	X+, r1
 
 00000216 <.do_clear_bss_start>:
- 216:	a3 3c       	cpi	r26, 0xC3	; 195
+ 216:	a6 30       	cpi	r26, 0x06	; 6
  218:	b2 07       	cpc	r27, r18
  21a:	e1 f7       	brne	.-8      	; 0x214 <.do_clear_bss_loop>
- 21c:	02 d0       	rcall	.+4      	; 0x222 <main>
- 21e:	1f c0       	rjmp	.+62     	; 0x25e <_exit>
+ 21c:	80 d1       	rcall	.+768    	; 0x51e <main>
+ 21e:	c9 c1       	rjmp	.+914    	; 0x5b2 <_exit>
 
 00000220 <__bad_interrupt>:
  220:	ef ce       	rjmp	.-546    	; 0x0 <__vectors>
 
-00000222 <main>:
+00000222 <LCDBusWrite>:
+	
+	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.CS);
+}
+
+void LCDBusRead(uint8_t reg, uint16_t data)
+{
+ 222:	af 92       	push	r10
+ 224:	bf 92       	push	r11
+ 226:	cf 92       	push	r12
+ 228:	df 92       	push	r13
+ 22a:	ef 92       	push	r14
+ 22c:	ff 92       	push	r15
+ 22e:	0f 93       	push	r16
+ 230:	1f 93       	push	r17
+ 232:	cf 93       	push	r28
+ 234:	df 93       	push	r29
+ 236:	40 e0       	ldi	r20, 0x00	; 0
+ 238:	50 e2       	ldi	r21, 0x20	; 32
+ 23a:	ea 01       	movw	r28, r20
+ 23c:	a8 81       	ld	r26, Y
+ 23e:	21 e0       	ldi	r18, 0x01	; 1
+ 240:	30 e0       	ldi	r19, 0x00	; 0
+ 242:	f9 01       	movw	r30, r18
+ 244:	02 c0       	rjmp	.+4      	; 0x24a <LCDBusWrite+0x28>
+ 246:	ee 0f       	add	r30, r30
+ 248:	ff 1f       	adc	r31, r31
+ 24a:	aa 95       	dec	r26
+ 24c:	e2 f7       	brpl	.-8      	; 0x246 <LCDBusWrite+0x24>
+ 24e:	df 01       	movw	r26, r30
+ 250:	e0 e4       	ldi	r30, 0x40	; 64
+ 252:	f6 e0       	ldi	r31, 0x06	; 6
+ 254:	a6 83       	std	Z+6, r26	; 0x06
+ 256:	a1 2c       	mov	r10, r1
+ 258:	96 e0       	ldi	r25, 0x06	; 6
+ 25a:	b9 2e       	mov	r11, r25
+ 25c:	9f ef       	ldi	r25, 0xFF	; 255
+ 25e:	d5 01       	movw	r26, r10
+ 260:	11 96       	adiw	r26, 0x01	; 1
+ 262:	9c 93       	st	X, r25
+ 264:	02 e0       	ldi	r16, 0x02	; 2
+ 266:	10 e2       	ldi	r17, 0x20	; 32
+ 268:	e8 01       	movw	r28, r16
+ 26a:	98 81       	ld	r25, Y
+ 26c:	d9 01       	movw	r26, r18
+ 26e:	09 2e       	mov	r0, r25
+ 270:	01 c0       	rjmp	.+2      	; 0x274 <LCDBusWrite+0x52>
+ 272:	aa 0f       	add	r26, r26
+ 274:	0a 94       	dec	r0
+ 276:	ea f7       	brpl	.-6      	; 0x272 <LCDBusWrite+0x50>
+ 278:	a6 83       	std	Z+6, r26	; 0x06
+ 27a:	d5 01       	movw	r26, r10
+ 27c:	15 96       	adiw	r26, 0x05	; 5
+ 27e:	1c 92       	st	X, r1
+ 280:	a1 e0       	ldi	r26, 0x01	; 1
+ 282:	b0 e2       	ldi	r27, 0x20	; 32
+ 284:	ec 90       	ld	r14, X
+ 286:	e9 01       	movw	r28, r18
+ 288:	02 c0       	rjmp	.+4      	; 0x28e <LCDBusWrite+0x6c>
+ 28a:	cc 0f       	add	r28, r28
+ 28c:	dd 1f       	adc	r29, r29
+ 28e:	ea 94       	dec	r14
+ 290:	e2 f7       	brpl	.-8      	; 0x28a <LCDBusWrite+0x68>
+ 292:	c6 83       	std	Z+6, r28	; 0x06
+ 294:	ec 90       	ld	r14, X
+ 296:	69 01       	movw	r12, r18
+ 298:	02 c0       	rjmp	.+4      	; 0x29e <LCDBusWrite+0x7c>
+ 29a:	cc 0c       	add	r12, r12
+ 29c:	dd 1c       	adc	r13, r13
+ 29e:	ea 94       	dec	r14
+ 2a0:	e2 f7       	brpl	.-8      	; 0x29a <LCDBusWrite+0x78>
+ 2a2:	c5 82       	std	Z+5, r12	; 0x05
+ 2a4:	e5 01       	movw	r28, r10
+ 2a6:	8d 83       	std	Y+5, r24	; 0x05
+ 2a8:	8c 91       	ld	r24, X
+ 2aa:	69 01       	movw	r12, r18
+ 2ac:	02 c0       	rjmp	.+4      	; 0x2b2 <LCDBusWrite+0x90>
+ 2ae:	cc 0c       	add	r12, r12
+ 2b0:	dd 1c       	adc	r13, r13
+ 2b2:	8a 95       	dec	r24
+ 2b4:	e2 f7       	brpl	.-8      	; 0x2ae <LCDBusWrite+0x8c>
+ 2b6:	c6 82       	std	Z+6, r12	; 0x06
+ 2b8:	8c 91       	ld	r24, X
+ 2ba:	79 01       	movw	r14, r18
+ 2bc:	02 c0       	rjmp	.+4      	; 0x2c2 <LCDBusWrite+0xa0>
+ 2be:	ee 0c       	add	r14, r14
+ 2c0:	ff 1c       	adc	r15, r15
+ 2c2:	8a 95       	dec	r24
+ 2c4:	e2 f7       	brpl	.-8      	; 0x2be <LCDBusWrite+0x9c>
+ 2c6:	e5 82       	std	Z+5, r14	; 0x05
+ 2c8:	e8 01       	movw	r28, r16
+ 2ca:	88 81       	ld	r24, Y
+ 2cc:	69 01       	movw	r12, r18
+ 2ce:	02 c0       	rjmp	.+4      	; 0x2d4 <LCDBusWrite+0xb2>
+ 2d0:	cc 0c       	add	r12, r12
+ 2d2:	dd 1c       	adc	r13, r13
+ 2d4:	8a 95       	dec	r24
+ 2d6:	e2 f7       	brpl	.-8      	; 0x2d0 <LCDBusWrite+0xae>
+ 2d8:	c5 82       	std	Z+5, r12	; 0x05
+ 2da:	e5 01       	movw	r28, r10
+ 2dc:	7d 83       	std	Y+5, r23	; 0x05
+ 2de:	8c 91       	ld	r24, X
+ 2e0:	69 01       	movw	r12, r18
+ 2e2:	02 c0       	rjmp	.+4      	; 0x2e8 <LCDBusWrite+0xc6>
+ 2e4:	cc 0c       	add	r12, r12
+ 2e6:	dd 1c       	adc	r13, r13
+ 2e8:	8a 95       	dec	r24
+ 2ea:	e2 f7       	brpl	.-8      	; 0x2e4 <LCDBusWrite+0xc2>
+ 2ec:	c6 82       	std	Z+6, r12	; 0x06
+ 2ee:	8c 91       	ld	r24, X
+ 2f0:	79 01       	movw	r14, r18
+ 2f2:	02 c0       	rjmp	.+4      	; 0x2f8 <LCDBusWrite+0xd6>
+ 2f4:	ee 0c       	add	r14, r14
+ 2f6:	ff 1c       	adc	r15, r15
+ 2f8:	8a 95       	dec	r24
+ 2fa:	e2 f7       	brpl	.-8      	; 0x2f4 <LCDBusWrite+0xd2>
+ 2fc:	e5 82       	std	Z+5, r14	; 0x05
+ 2fe:	6d 83       	std	Y+5, r22	; 0x05
+ 300:	8c 91       	ld	r24, X
+ 302:	b9 01       	movw	r22, r18
+ 304:	02 c0       	rjmp	.+4      	; 0x30a <LCDBusWrite+0xe8>
+ 306:	66 0f       	add	r22, r22
+ 308:	77 1f       	adc	r23, r23
+ 30a:	8a 95       	dec	r24
+ 30c:	e2 f7       	brpl	.-8      	; 0x306 <LCDBusWrite+0xe4>
+ 30e:	66 83       	std	Z+6, r22	; 0x06
+ 310:	8c 91       	ld	r24, X
+ 312:	d9 01       	movw	r26, r18
+ 314:	02 c0       	rjmp	.+4      	; 0x31a <LCDBusWrite+0xf8>
+ 316:	aa 0f       	add	r26, r26
+ 318:	bb 1f       	adc	r27, r27
+ 31a:	8a 95       	dec	r24
+ 31c:	e2 f7       	brpl	.-8      	; 0x316 <LCDBusWrite+0xf4>
+ 31e:	a5 83       	std	Z+5, r26	; 0x05
+ 320:	ea 01       	movw	r28, r20
+ 322:	88 81       	ld	r24, Y
+ 324:	08 2e       	mov	r0, r24
+ 326:	01 c0       	rjmp	.+2      	; 0x32a <LCDBusWrite+0x108>
+ 328:	22 0f       	add	r18, r18
+ 32a:	0a 94       	dec	r0
+ 32c:	ea f7       	brpl	.-6      	; 0x328 <LCDBusWrite+0x106>
+ 32e:	25 83       	std	Z+5, r18	; 0x05
+ 330:	df 91       	pop	r29
+ 332:	cf 91       	pop	r28
+ 334:	1f 91       	pop	r17
+ 336:	0f 91       	pop	r16
+ 338:	ff 90       	pop	r15
+ 33a:	ef 90       	pop	r14
+ 33c:	df 90       	pop	r13
+ 33e:	cf 90       	pop	r12
+ 340:	bf 90       	pop	r11
+ 342:	af 90       	pop	r10
+ 344:	08 95       	ret
+
+00000346 <UTFTStartup>:
+	OSC.CTRL &= ~OSC_RC2MEN_bm;                   /* Disable 2Mhz oscillator */
+}
+
+void UTFTStartup(void)
+{
+	LCDBusWrite(0xE5, 0x78F0); // set SRAM internal timing
+ 346:	60 ef       	ldi	r22, 0xF0	; 240
+ 348:	78 e7       	ldi	r23, 0x78	; 120
+ 34a:	85 ee       	ldi	r24, 0xE5	; 229
+ 34c:	6a df       	rcall	.-300    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x01, 0x0100); // set Driver Output Control
+ 34e:	60 e0       	ldi	r22, 0x00	; 0
+ 350:	71 e0       	ldi	r23, 0x01	; 1
+ 352:	81 e0       	ldi	r24, 0x01	; 1
+ 354:	66 df       	rcall	.-308    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x02, 0x0200); // set 1 line inversion
+ 356:	60 e0       	ldi	r22, 0x00	; 0
+ 358:	72 e0       	ldi	r23, 0x02	; 2
+ 35a:	82 e0       	ldi	r24, 0x02	; 2
+ 35c:	62 df       	rcall	.-316    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x03, 0x1030); // set GRAM write direction and BGR=1.
+ 35e:	60 e3       	ldi	r22, 0x30	; 48
+ 360:	70 e1       	ldi	r23, 0x10	; 16
+ 362:	83 e0       	ldi	r24, 0x03	; 3
+ 364:	5e df       	rcall	.-324    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x04, 0x0000); // Resize register
+ 366:	60 e0       	ldi	r22, 0x00	; 0
+ 368:	70 e0       	ldi	r23, 0x00	; 0
+ 36a:	84 e0       	ldi	r24, 0x04	; 4
+ 36c:	5a df       	rcall	.-332    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x08, 0x0207); // set the back porch and front porch
+ 36e:	67 e0       	ldi	r22, 0x07	; 7
+ 370:	72 e0       	ldi	r23, 0x02	; 2
+ 372:	88 e0       	ldi	r24, 0x08	; 8
+ 374:	56 df       	rcall	.-340    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x09, 0x0000); // set non-display area refresh cycle ISC[3:0]
+ 376:	60 e0       	ldi	r22, 0x00	; 0
+ 378:	70 e0       	ldi	r23, 0x00	; 0
+ 37a:	89 e0       	ldi	r24, 0x09	; 9
+ 37c:	52 df       	rcall	.-348    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x0A, 0x0000); // FMARK function
+ 37e:	60 e0       	ldi	r22, 0x00	; 0
+ 380:	70 e0       	ldi	r23, 0x00	; 0
+ 382:	8a e0       	ldi	r24, 0x0A	; 10
+ 384:	4e df       	rcall	.-356    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x0C, 0x0000); // RGB interface setting
+ 386:	60 e0       	ldi	r22, 0x00	; 0
+ 388:	70 e0       	ldi	r23, 0x00	; 0
+ 38a:	8c e0       	ldi	r24, 0x0C	; 12
+ 38c:	4a df       	rcall	.-364    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x0D, 0x0000); // Frame marker Position
+ 38e:	60 e0       	ldi	r22, 0x00	; 0
+ 390:	70 e0       	ldi	r23, 0x00	; 0
+ 392:	8d e0       	ldi	r24, 0x0D	; 13
+ 394:	46 df       	rcall	.-372    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x0F, 0x0000); // RGB interface polarity
+ 396:	60 e0       	ldi	r22, 0x00	; 0
+ 398:	70 e0       	ldi	r23, 0x00	; 0
+ 39a:	8f e0       	ldi	r24, 0x0F	; 15
+ 39c:	42 df       	rcall	.-380    	; 0x222 <LCDBusWrite>
+	//*************Power On sequence ****************//
+	LCDBusWrite(0x10, 0x0000); // SAP, BT[3:0], AP, DSTB, SLP, STB
+ 39e:	60 e0       	ldi	r22, 0x00	; 0
+ 3a0:	70 e0       	ldi	r23, 0x00	; 0
+ 3a2:	80 e1       	ldi	r24, 0x10	; 16
+ 3a4:	3e df       	rcall	.-388    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x11, 0x0007); // DC1[2:0], DC0[2:0], VC[2:0]
+ 3a6:	67 e0       	ldi	r22, 0x07	; 7
+ 3a8:	70 e0       	ldi	r23, 0x00	; 0
+ 3aa:	81 e1       	ldi	r24, 0x11	; 17
+ 3ac:	3a df       	rcall	.-396    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x12, 0x0000); // VREG1OUT voltage
+ 3ae:	60 e0       	ldi	r22, 0x00	; 0
+ 3b0:	70 e0       	ldi	r23, 0x00	; 0
+ 3b2:	82 e1       	ldi	r24, 0x12	; 18
+ 3b4:	36 df       	rcall	.-404    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x13, 0x0000); // VDV[4:0] for VCOM amplitude
+ 3b6:	60 e0       	ldi	r22, 0x00	; 0
+ 3b8:	70 e0       	ldi	r23, 0x00	; 0
+ 3ba:	83 e1       	ldi	r24, 0x13	; 19
+ 3bc:	32 df       	rcall	.-412    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x07, 0x0001);
+ 3be:	61 e0       	ldi	r22, 0x01	; 1
+ 3c0:	70 e0       	ldi	r23, 0x00	; 0
+ 3c2:	87 e0       	ldi	r24, 0x07	; 7
+ 3c4:	2e df       	rcall	.-420    	; 0x222 <LCDBusWrite>
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+ 3c6:	2f ef       	ldi	r18, 0xFF	; 255
+ 3c8:	87 e8       	ldi	r24, 0x87	; 135
+ 3ca:	93 e1       	ldi	r25, 0x13	; 19
+ 3cc:	21 50       	subi	r18, 0x01	; 1
+ 3ce:	80 40       	sbci	r24, 0x00	; 0
+ 3d0:	90 40       	sbci	r25, 0x00	; 0
+ 3d2:	e1 f7       	brne	.-8      	; 0x3cc <UTFTStartup+0x86>
+ 3d4:	00 c0       	rjmp	.+0      	; 0x3d6 <UTFTStartup+0x90>
+ 3d6:	00 00       	nop
+	_delay_ms(200); // Dis-charge capacitor power voltage
+	LCDBusWrite(0x10, 0x1690); // SAP, BT[3:0], AP, DSTB, SLP, STB
+ 3d8:	60 e9       	ldi	r22, 0x90	; 144
+ 3da:	76 e1       	ldi	r23, 0x16	; 22
+ 3dc:	80 e1       	ldi	r24, 0x10	; 16
+ 3de:	21 df       	rcall	.-446    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x11, 0x0227); // Set DC1[2:0], DC0[2:0], VC[2:0]
+ 3e0:	67 e2       	ldi	r22, 0x27	; 39
+ 3e2:	72 e0       	ldi	r23, 0x02	; 2
+ 3e4:	81 e1       	ldi	r24, 0x11	; 17
+ 3e6:	1d df       	rcall	.-454    	; 0x222 <LCDBusWrite>
+ 3e8:	2f ef       	ldi	r18, 0xFF	; 255
+ 3ea:	81 ee       	ldi	r24, 0xE1	; 225
+ 3ec:	94 e0       	ldi	r25, 0x04	; 4
+ 3ee:	21 50       	subi	r18, 0x01	; 1
+ 3f0:	80 40       	sbci	r24, 0x00	; 0
+ 3f2:	90 40       	sbci	r25, 0x00	; 0
+ 3f4:	e1 f7       	brne	.-8      	; 0x3ee <UTFTStartup+0xa8>
+ 3f6:	00 c0       	rjmp	.+0      	; 0x3f8 <UTFTStartup+0xb2>
+ 3f8:	00 00       	nop
+	_delay_ms(50); // Delay 50ms
+	LCDBusWrite(0x12, 0x000D); // 0012
+ 3fa:	6d e0       	ldi	r22, 0x0D	; 13
+ 3fc:	70 e0       	ldi	r23, 0x00	; 0
+ 3fe:	82 e1       	ldi	r24, 0x12	; 18
+ 400:	10 df       	rcall	.-480    	; 0x222 <LCDBusWrite>
+ 402:	2f ef       	ldi	r18, 0xFF	; 255
+ 404:	81 ee       	ldi	r24, 0xE1	; 225
+ 406:	94 e0       	ldi	r25, 0x04	; 4
+ 408:	21 50       	subi	r18, 0x01	; 1
+ 40a:	80 40       	sbci	r24, 0x00	; 0
+ 40c:	90 40       	sbci	r25, 0x00	; 0
+ 40e:	e1 f7       	brne	.-8      	; 0x408 <UTFTStartup+0xc2>
+ 410:	00 c0       	rjmp	.+0      	; 0x412 <UTFTStartup+0xcc>
+ 412:	00 00       	nop
+	_delay_ms(50); // Delay 50ms
+	LCDBusWrite(0x13, 0x1200); // VDV[4:0] for VCOM amplitude
+ 414:	60 e0       	ldi	r22, 0x00	; 0
+ 416:	72 e1       	ldi	r23, 0x12	; 18
+ 418:	83 e1       	ldi	r24, 0x13	; 19
+ 41a:	03 df       	rcall	.-506    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x29, 0x000A); // 04  VCM[5:0] for VCOMH
+ 41c:	6a e0       	ldi	r22, 0x0A	; 10
+ 41e:	70 e0       	ldi	r23, 0x00	; 0
+ 420:	89 e2       	ldi	r24, 0x29	; 41
+ 422:	ff de       	rcall	.-514    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x2B, 0x000D); // Set Frame Rate
+ 424:	6d e0       	ldi	r22, 0x0D	; 13
+ 426:	70 e0       	ldi	r23, 0x00	; 0
+ 428:	8b e2       	ldi	r24, 0x2B	; 43
+ 42a:	fb de       	rcall	.-522    	; 0x222 <LCDBusWrite>
+ 42c:	2f ef       	ldi	r18, 0xFF	; 255
+ 42e:	81 ee       	ldi	r24, 0xE1	; 225
+ 430:	94 e0       	ldi	r25, 0x04	; 4
+ 432:	21 50       	subi	r18, 0x01	; 1
+ 434:	80 40       	sbci	r24, 0x00	; 0
+ 436:	90 40       	sbci	r25, 0x00	; 0
+ 438:	e1 f7       	brne	.-8      	; 0x432 <UTFTStartup+0xec>
+ 43a:	00 c0       	rjmp	.+0      	; 0x43c <UTFTStartup+0xf6>
+ 43c:	00 00       	nop
+	_delay_ms(50); // Delay 50ms
+	LCDBusWrite(0x20, 0x0000); // GRAM horizontal Address
+ 43e:	60 e0       	ldi	r22, 0x00	; 0
+ 440:	70 e0       	ldi	r23, 0x00	; 0
+ 442:	80 e2       	ldi	r24, 0x20	; 32
+ 444:	ee de       	rcall	.-548    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x21, 0x0000); // GRAM Vertical Address
+ 446:	60 e0       	ldi	r22, 0x00	; 0
+ 448:	70 e0       	ldi	r23, 0x00	; 0
+ 44a:	81 e2       	ldi	r24, 0x21	; 33
+ 44c:	ea de       	rcall	.-556    	; 0x222 <LCDBusWrite>
+	// ----------- Adjust the Gamma Curve ----------//
+	LCDBusWrite(0x30, 0x0000);
+ 44e:	60 e0       	ldi	r22, 0x00	; 0
+ 450:	70 e0       	ldi	r23, 0x00	; 0
+ 452:	80 e3       	ldi	r24, 0x30	; 48
+ 454:	e6 de       	rcall	.-564    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x31, 0x0404);
+ 456:	64 e0       	ldi	r22, 0x04	; 4
+ 458:	74 e0       	ldi	r23, 0x04	; 4
+ 45a:	81 e3       	ldi	r24, 0x31	; 49
+ 45c:	e2 de       	rcall	.-572    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x32, 0x0003);
+ 45e:	63 e0       	ldi	r22, 0x03	; 3
+ 460:	70 e0       	ldi	r23, 0x00	; 0
+ 462:	82 e3       	ldi	r24, 0x32	; 50
+ 464:	de de       	rcall	.-580    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x35, 0x0405);
+ 466:	65 e0       	ldi	r22, 0x05	; 5
+ 468:	74 e0       	ldi	r23, 0x04	; 4
+ 46a:	85 e3       	ldi	r24, 0x35	; 53
+ 46c:	da de       	rcall	.-588    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x36, 0x0808);
+ 46e:	68 e0       	ldi	r22, 0x08	; 8
+ 470:	78 e0       	ldi	r23, 0x08	; 8
+ 472:	86 e3       	ldi	r24, 0x36	; 54
+ 474:	d6 de       	rcall	.-596    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x37, 0x0407);
+ 476:	67 e0       	ldi	r22, 0x07	; 7
+ 478:	74 e0       	ldi	r23, 0x04	; 4
+ 47a:	87 e3       	ldi	r24, 0x37	; 55
+ 47c:	d2 de       	rcall	.-604    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x38, 0x0303);
+ 47e:	63 e0       	ldi	r22, 0x03	; 3
+ 480:	73 e0       	ldi	r23, 0x03	; 3
+ 482:	88 e3       	ldi	r24, 0x38	; 56
+ 484:	ce de       	rcall	.-612    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x39, 0x0707);
+ 486:	67 e0       	ldi	r22, 0x07	; 7
+ 488:	77 e0       	ldi	r23, 0x07	; 7
+ 48a:	89 e3       	ldi	r24, 0x39	; 57
+ 48c:	ca de       	rcall	.-620    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x3C, 0x0504);
+ 48e:	64 e0       	ldi	r22, 0x04	; 4
+ 490:	75 e0       	ldi	r23, 0x05	; 5
+ 492:	8c e3       	ldi	r24, 0x3C	; 60
+ 494:	c6 de       	rcall	.-628    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x3D, 0x0808);
+ 496:	68 e0       	ldi	r22, 0x08	; 8
+ 498:	78 e0       	ldi	r23, 0x08	; 8
+ 49a:	8d e3       	ldi	r24, 0x3D	; 61
+ 49c:	c2 de       	rcall	.-636    	; 0x222 <LCDBusWrite>
+	//------------------ Set GRAM area ---------------//
+	LCDBusWrite(0x50, 0x0000); // Horizontal GRAM Start Address
+ 49e:	60 e0       	ldi	r22, 0x00	; 0
+ 4a0:	70 e0       	ldi	r23, 0x00	; 0
+ 4a2:	80 e5       	ldi	r24, 0x50	; 80
+ 4a4:	be de       	rcall	.-644    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x51, 0x00EF); // Horizontal GRAM End Address
+ 4a6:	6f ee       	ldi	r22, 0xEF	; 239
+ 4a8:	70 e0       	ldi	r23, 0x00	; 0
+ 4aa:	81 e5       	ldi	r24, 0x51	; 81
+ 4ac:	ba de       	rcall	.-652    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x52, 0x0000); // Vertical GRAM Start Address
+ 4ae:	60 e0       	ldi	r22, 0x00	; 0
+ 4b0:	70 e0       	ldi	r23, 0x00	; 0
+ 4b2:	82 e5       	ldi	r24, 0x52	; 82
+ 4b4:	b6 de       	rcall	.-660    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x53, 0x013F); // Vertical GRAM Start Address
+ 4b6:	6f e3       	ldi	r22, 0x3F	; 63
+ 4b8:	71 e0       	ldi	r23, 0x01	; 1
+ 4ba:	83 e5       	ldi	r24, 0x53	; 83
+ 4bc:	b2 de       	rcall	.-668    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x60, 0xA700); // Gate Scan Line
+ 4be:	60 e0       	ldi	r22, 0x00	; 0
+ 4c0:	77 ea       	ldi	r23, 0xA7	; 167
+ 4c2:	80 e6       	ldi	r24, 0x60	; 96
+ 4c4:	ae de       	rcall	.-676    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x61, 0x0001); // NDL,VLE, REV
+ 4c6:	61 e0       	ldi	r22, 0x01	; 1
+ 4c8:	70 e0       	ldi	r23, 0x00	; 0
+ 4ca:	81 e6       	ldi	r24, 0x61	; 97
+ 4cc:	aa de       	rcall	.-684    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x6A, 0x0000); // set scrolling line
+ 4ce:	60 e0       	ldi	r22, 0x00	; 0
+ 4d0:	70 e0       	ldi	r23, 0x00	; 0
+ 4d2:	8a e6       	ldi	r24, 0x6A	; 106
+ 4d4:	a6 de       	rcall	.-692    	; 0x222 <LCDBusWrite>
+	//-------------- Partial Display Control ---------//
+	LCDBusWrite(0x80, 0x0000);
+ 4d6:	60 e0       	ldi	r22, 0x00	; 0
+ 4d8:	70 e0       	ldi	r23, 0x00	; 0
+ 4da:	80 e8       	ldi	r24, 0x80	; 128
+ 4dc:	a2 de       	rcall	.-700    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x81, 0x0000);
+ 4de:	60 e0       	ldi	r22, 0x00	; 0
+ 4e0:	70 e0       	ldi	r23, 0x00	; 0
+ 4e2:	81 e8       	ldi	r24, 0x81	; 129
+ 4e4:	9e de       	rcall	.-708    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x82, 0x0000);
+ 4e6:	60 e0       	ldi	r22, 0x00	; 0
+ 4e8:	70 e0       	ldi	r23, 0x00	; 0
+ 4ea:	82 e8       	ldi	r24, 0x82	; 130
+ 4ec:	9a de       	rcall	.-716    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x83, 0x0000);
+ 4ee:	60 e0       	ldi	r22, 0x00	; 0
+ 4f0:	70 e0       	ldi	r23, 0x00	; 0
+ 4f2:	83 e8       	ldi	r24, 0x83	; 131
+ 4f4:	96 de       	rcall	.-724    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x84, 0x0000);
+ 4f6:	60 e0       	ldi	r22, 0x00	; 0
+ 4f8:	70 e0       	ldi	r23, 0x00	; 0
+ 4fa:	84 e8       	ldi	r24, 0x84	; 132
+ 4fc:	92 de       	rcall	.-732    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x85, 0x0000);
+ 4fe:	60 e0       	ldi	r22, 0x00	; 0
+ 500:	70 e0       	ldi	r23, 0x00	; 0
+ 502:	85 e8       	ldi	r24, 0x85	; 133
+ 504:	8e de       	rcall	.-740    	; 0x222 <LCDBusWrite>
+	//-------------- Panel Control -------------------//
+	LCDBusWrite(0x90, 0x0010);
+ 506:	60 e1       	ldi	r22, 0x10	; 16
+ 508:	70 e0       	ldi	r23, 0x00	; 0
+ 50a:	80 e9       	ldi	r24, 0x90	; 144
+ 50c:	8a de       	rcall	.-748    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x92, 0x0000);
+ 50e:	60 e0       	ldi	r22, 0x00	; 0
+ 510:	70 e0       	ldi	r23, 0x00	; 0
+ 512:	82 e9       	ldi	r24, 0x92	; 146
+ 514:	86 de       	rcall	.-756    	; 0x222 <LCDBusWrite>
+	LCDBusWrite(0x07, 0x0133); // 262K color and display ON
+ 516:	63 e3       	ldi	r22, 0x33	; 51
+ 518:	71 e0       	ldi	r23, 0x01	; 1
+ 51a:	87 e0       	ldi	r24, 0x07	; 7
+ 51c:	82 ce       	rjmp	.-764    	; 0x222 <LCDBusWrite>
+
+0000051e <main>:
+	// RD pin is set to a high level, so only write is possible.
+}
+
+void setClockTo32MHz(void)
+{
+	OSC.CTRL |= OSC_RC32MEN_bm | OSC_RC32KEN_bm;  /* Enable the internal 32MHz & 32KHz oscillators */
+ 51e:	80 91 50 00 	lds	r24, 0x0050
+ 522:	86 60       	ori	r24, 0x06	; 6
+ 524:	80 93 50 00 	sts	0x0050, r24
+	while(!(OSC.STATUS & OSC_RC32KRDY_bm));       /* Wait for 32Khz oscillator to stabilize */
+ 528:	80 91 51 00 	lds	r24, 0x0051
+ 52c:	82 ff       	sbrs	r24, 2
+ 52e:	fc cf       	rjmp	.-8      	; 0x528 <main+0xa>
+	while(!(OSC.STATUS & OSC_RC32MRDY_bm));       /* Wait for 32MHz oscillator to stabilize */
+ 530:	80 91 51 00 	lds	r24, 0x0051
+ 534:	81 ff       	sbrs	r24, 1
+ 536:	fc cf       	rjmp	.-8      	; 0x530 <main+0x12>
+	DFLLRC32M.CTRL = DFLL_ENABLE_bm ;             /* Enable DFLL - defaults to calibrate against internal 32Khz clock */
+ 538:	91 e0       	ldi	r25, 0x01	; 1
+ 53a:	90 93 60 00 	sts	0x0060, r25
+	CCP = CCP_IOREG_gc;                           /* Disable register security for clock update */
+ 53e:	88 ed       	ldi	r24, 0xD8	; 216
+ 540:	84 bf       	out	0x34, r24	; 52
+	CLK.CTRL = CLK_SCLKSEL_RC32M_gc;              /* Switch to 32MHz clock */
+ 542:	90 93 40 00 	sts	0x0040, r25
+	OSC.CTRL &= ~OSC_RC2MEN_bm;                   /* Disable 2Mhz oscillator */
+ 546:	80 91 50 00 	lds	r24, 0x0050
+ 54a:	8e 7f       	andi	r24, 0xFE	; 254
+ 54c:	80 93 50 00 	sts	0x0050, r24
 
 static TYPE_LCD_PINOUT LCDPinout;
 
 void LCDInit(void)
 {
 	LCDPinout.CS = PORTC0;
- 222:	91 e0       	ldi	r25, 0x01	; 1
- 224:	90 93 00 20 	sts	0x2000, r25
+ 550:	10 92 00 20 	sts	0x2000, r1
 	LCDPinout.WR = PORTC1;
- 228:	22 e0       	ldi	r18, 0x02	; 2
- 22a:	20 93 01 20 	sts	0x2001, r18
+ 554:	90 93 01 20 	sts	0x2001, r25
 	LCDPinout.RS = PORTC2;
- 22e:	84 e0       	ldi	r24, 0x04	; 4
- 230:	80 93 02 20 	sts	0x2002, r24
+ 558:	82 e0       	ldi	r24, 0x02	; 2
+ 55a:	80 93 02 20 	sts	0x2002, r24
 	
-	PORTC.DIR = LCDPinout.CS | LCDPinout.WR | LCDPinout.RS;
- 234:	40 91 00 20 	lds	r20, 0x2000
- 238:	80 91 01 20 	lds	r24, 0x2001
- 23c:	30 91 02 20 	lds	r19, 0x2002
- 240:	84 2b       	or	r24, r20
- 242:	83 2b       	or	r24, r19
- 244:	80 93 40 06 	sts	0x0640, r24
-	
-	PORTx_SET_BIT_HIGH(PORTC, PORTC0);
- 248:	20 93 44 06 	sts	0x0644, r18
-
-int main(void)
+	LCDPinout.PORT->DIR |= LCDPinout.CS | LCDPinout.WR | LCDPinout.RS;
+ 55e:	e0 91 03 20 	lds	r30, 0x2003
+ 562:	f0 91 04 20 	lds	r31, 0x2004
+ 566:	40 81       	ld	r20, Z
+ 568:	80 91 00 20 	lds	r24, 0x2000
+ 56c:	30 91 01 20 	lds	r19, 0x2001
+ 570:	20 91 02 20 	lds	r18, 0x2002
+ 574:	84 2b       	or	r24, r20
+ 576:	83 2b       	or	r24, r19
+ 578:	82 2b       	or	r24, r18
+ 57a:	80 83       	st	Z, r24
 {	
+	setClockTo32MHz();
+	
 	LCDInit();
 	
-	PORTR.PIN0CTRL = PORT_OPC_TOTEM_gc;
- 24c:	10 92 f0 07 	sts	0x07F0, r1
+	PORTx_SET_BIT_AS_OUTPUT(PORTR, PORTR0);
+ 57c:	90 93 e1 07 	sts	0x07E1, r25
 	
-	PORTR.DIR = 0x01;
- 250:	90 93 e0 07 	sts	0x07E0, r25
+	LCDBusWrite(LCD_ENTRY_MODE_REGISTER, 0x0030); // I/D[1:0] = 11b
+	
+	LCDBusWrite(0x0C, 0x0003);  // We are NOT using RGB interface!*/
+	
+	UTFTStartup();
+ 580:	e2 de       	rcall	.-572    	; 0x346 <UTFTStartup>
+	
 	
     while(1)
     {
-		PORTR.OUT = 0x01;
- 254:	81 e0       	ldi	r24, 0x01	; 1
- 256:	80 93 e4 07 	sts	0x07E4, r24
-		
-		asm("nop");
- 25a:	00 00       	nop
- 25c:	fc cf       	rjmp	.-8      	; 0x256 <main+0x34>
+		_delay_ms(500);
+		PORTx_SET_BIT_HIGH(PORTR, PORTR0);
+ 582:	81 e0       	ldi	r24, 0x01	; 1
+ 584:	2f ef       	ldi	r18, 0xFF	; 255
+ 586:	33 ed       	ldi	r19, 0xD3	; 211
+ 588:	90 e3       	ldi	r25, 0x30	; 48
+ 58a:	21 50       	subi	r18, 0x01	; 1
+ 58c:	30 40       	sbci	r19, 0x00	; 0
+ 58e:	90 40       	sbci	r25, 0x00	; 0
+ 590:	e1 f7       	brne	.-8      	; 0x58a <main+0x6c>
+ 592:	00 c0       	rjmp	.+0      	; 0x594 <main+0x76>
+ 594:	00 00       	nop
+ 596:	80 93 e5 07 	sts	0x07E5, r24
+ 59a:	2f ef       	ldi	r18, 0xFF	; 255
+ 59c:	33 ed       	ldi	r19, 0xD3	; 211
+ 59e:	90 e3       	ldi	r25, 0x30	; 48
+ 5a0:	21 50       	subi	r18, 0x01	; 1
+ 5a2:	30 40       	sbci	r19, 0x00	; 0
+ 5a4:	90 40       	sbci	r25, 0x00	; 0
+ 5a6:	e1 f7       	brne	.-8      	; 0x5a0 <main+0x82>
+ 5a8:	00 c0       	rjmp	.+0      	; 0x5aa <main+0x8c>
+ 5aa:	00 00       	nop
+		//LCDBusWrite(0x07, 0x0000);
+		_delay_ms(500);
+		PORTx_SET_BIT_LOW(PORTR, PORTR0);
+ 5ac:	80 93 e6 07 	sts	0x07E6, r24
+ 5b0:	e9 cf       	rjmp	.-46     	; 0x584 <main+0x66>
 
-0000025e <_exit>:
- 25e:	f8 94       	cli
+000005b2 <_exit>:
+ 5b2:	f8 94       	cli
 
-00000260 <__stop_program>:
- 260:	ff cf       	rjmp	.-2      	; 0x260 <__stop_program>
+000005b4 <__stop_program>:
+ 5b4:	ff cf       	rjmp	.-2      	; 0x5b4 <__stop_program>
