@@ -41,8 +41,10 @@ LCD_CS -> A3*/
 #define PORTC1 (uint8_t) PIN1_bp
 #define PORTC2 (uint8_t) PIN2_bp
 #define PORTC3 (uint8_t) PIN3_bp
+#define PORTC4 (uint8_t) PIN4_bp
 
 #define PORTR0 (uint8_t) PIN0_bp
+#define PORTR1 (uint8_t) PIN1_bp
 
 #define PORTx_SET_BIT_HIGH(x, y)		((x).OUTSET = (1 << y))
 #define PORTx_SET_BIT_LOW(x,y)			((x).OUTCLR = (1 << y))
@@ -54,16 +56,27 @@ LCD_CS -> A3*/
 #define LCD_DRIVER_OUTPUT_CONTROL_REGISTER 0x01
 #define LCD_INDEX_REGISTER 0x00
 #define LCD_ENTRY_MODE_REGISTER 0x03
+#define LCD_DISPLAY_CONTROL_2_REGISTER 0x08
+#define LCD_DISPLAY_CONTROL_3_REGISTER 0x09
+#define LCD_RGB_DISPLAY_INTERFACE_CONTROL_1_REGISTER 0x0C
+#define LCD_FRAME_MARKER_POSITION_REGISTER 0x0D
+#define LCD_RGB_DISPLAY_INTERFACE_CONTROL_2_REGISTER 0x0F
+
+#define LCD_POWER_CONTROL_1_REGISTER 0x10
 
 static void LCDBusWrite(uint8_t reg, uint16_t data);
 static void LCDInit(void);
 static void setClockTo32MHz(void);
+static void UTFTStartup(void);
+static void LCDBusWriteData(uint8_t data);
+static void LCDBusWriteRegister(uint8_t reg);
 
 typedef struct t_LCDPinout
 {
 	volatile uint8_t CS;
 	volatile uint8_t WR;
 	volatile uint8_t RS;
+	volatile uint8_t RESET;
 	volatile PORT_t* PORT;
 
 	volatile uint8_t DB7_0;
@@ -77,50 +90,101 @@ void LCDInit(void)
 	LCDPinout.CS = PORTC0;
 	LCDPinout.WR = PORTC1;
 	LCDPinout.RS = PORTC2;
+	LCDPinout.RESET = PORTC3;
 	
-	LCDPinout.PORT->DIR |= LCDPinout.CS | LCDPinout.WR | LCDPinout.RS;
+	//LCDPinout.PORT->DIR |= LCDPinout.CS | LCDPinout.WR | LCDPinout.RS;
+	
+	PORTx_SET_BIT_AS_OUTPUT(PORTR, PORTR0);
+	PORTx_SET_BIT_AS_OUTPUT(PORTR, PORTR1);
+	
+	PORTx_SET_BIT_AS_OUTPUT(PORTC, LCDPinout.CS);
+	PORTx_SET_BIT_AS_OUTPUT(PORTC, LCDPinout.WR);
+	PORTx_SET_BIT_AS_OUTPUT(PORTC, LCDPinout.RS);
+	PORTx_SET_BIT_AS_OUTPUT(PORTC, LCDPinout.RESET);
+	
+	PORTx_SET_BITS_AS_OUTPUT(PORTA, 0xFF);
+	
+	//PORTC.OUTSET = 0xFF;
+	
+	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.RESET);
+	PORTx_SET_BIT_HIGH(PORTR, PORTR0);
+	_delay_ms(5);
+	PORTx_SET_BIT_LOW(PORTC, LCDPinout.RESET);
+	PORTx_SET_BIT_LOW(PORTR, PORTR0);
+	_delay_ms(15);
+	/*PORTx_SET_BIT_HIGH(PORTC, LCDPinout.RESET);
+	PORTx_SET_BIT_HIGH(PORTR, PORTR0);*/
+	_delay_ms(15);
+	
+	UTFTStartup();
+	
+	/*LCDBusWrite(LCD_DRIVER_OUTPUT_CONTROL_REGISTER, 0x0100);
+	LCDBusWrite(LCD_ENTRY_MODE_REGISTER, 0x0030); // I/D[1:0] = 11b
+	LCDBusWrite(LCD_DISPLAY_CONTROL_2_REGISTER, 0x0202); // 2 front porch lines, 2 back porch lines
+	LCDBusWrite(LCD_DISPLAY_CONTROL_3_REGISTER, 0x0000); // PTG[1:0] = 00b -> Normal scan
+	LCDBusWrite(LCD_RGB_DISPLAY_INTERFACE_CONTROL_1_REGISTER, 0x0003);  // We are NOT using RGB interface!
+	LCDBusWrite(LCD_FRAME_MARKER_POSITION_REGISTER, 0x0000); // Position -> 0th line
+	LCDBusWrite(LCD_RGB_DISPLAY_INTERFACE_CONTROL_2_REGISTER, 0x0000); // Ignore this register, RGB interface not used
+	
+	LCDBusWrite(LCD_POWER_CONTROL_1_REGISTER, 0x1690);
+				// Bit 0 (STB): Standby Mode		-> Exit standby mode = 0
+				// Bit 1 (SLP): Sleep Mode			-> Exit sleep mode = 0
+				// Bits 4 - 6 (AP[2:0])				-> Largest constant current = 001b
+				// Bit 7 (APE): Power supply enable -> Start generation of power supply = 1
+				// Bits 8 - 10 (BT[2:0])			-> 110b
+				// Bit 12 (SAP): Source Driver Output Control -> Enabled = 1
+				// NOTE: When starting the charge-pump of LCD in the Power ON stage,
+				// make sure that SAP=0, and set the SAP=1, after starting up the
+				// LCD power supply circuit.*/
 }
 
-void LCDBusWrite(uint8_t reg, uint16_t data)
+void LCDBusWriteRegister(uint8_t reg)
 {
-	PORTx_SET_BIT_LOW(PORTC, LCDPinout.CS);
-	PORTx_SET_BITS_AS_OUTPUT(PORTA, 0xFF /* All bits as output */);
-	
-	// Now write to register index!
-	
 	PORTx_SET_BIT_LOW(PORTC, LCDPinout.RS);
 	
 	PORTA.OUTSET = 0x00; // MSB for index register must be set to 0x00
+	
+	PORTx_SET_BIT_LOW(PORTR, PORTR1);	// Turn LED1 OFF before transfer
 	// Low pulse
 	PORTx_SET_BIT_LOW(PORTC, LCDPinout.WR);
 	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.WR);
 	
 	PORTA.OUTSET = reg;
+	
+	PORTx_SET_BIT_HIGH(PORTR, PORTR1);	// Turn LED1 ON during transfer
 	// Low pulse
 	PORTx_SET_BIT_LOW(PORTC, LCDPinout.WR);
 	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.WR);
 	
 	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.RS); // Finished writing index register
+}
+
+void LCDBusWriteData(uint8_t data)
+{
+	PORTA.OUTSET = data;
+	// Low pulse
+	PORTx_SET_BIT_LOW(PORTC, LCDPinout.WR);
+	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.WR);
+}
+
+void LCDBusWrite(uint8_t reg, uint16_t data)
+{
+	PORTx_SET_BIT_LOW(PORTC, LCDPinout.CS);
+	//PORTx_SET_BITS_AS_OUTPUT(PORTA, 0xFF /* All bits as output */);
+	
+	// Now write to register index!
+	
+	LCDBusWriteRegister(reg);
 	
 	// Now write data!
 	
-	PORTA.OUTSET = (uint8_t) (data >> 8);
-	// Low pulse
-	PORTx_SET_BIT_LOW(PORTC, LCDPinout.WR);
-	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.WR);
+	// LSB Data
+	LCDBusWriteData((uint8_t) (data >> 8));
 	
-	PORTA.OUTSET = (uint8_t) (data & 0x00FF);
-	// Low pulse
-	PORTx_SET_BIT_LOW(PORTC, LCDPinout.WR);
-	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.WR);
+	// MSB Data
+	LCDBusWriteData((uint8_t) (data & 0x00FF));
 	
 	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.CS);
-}
-
-void LCDBusRead(uint8_t reg, uint16_t data)
-{
-	// Reading isn't possible if using 2.8" ITDB02 Shield
-	// RD pin is set to a high level, so only write is possible.
 }
 
 void setClockTo32MHz(void)
@@ -197,27 +261,65 @@ void UTFTStartup(void)
 	LCDBusWrite(0x07, 0x0133); // 262K color and display ON
 }
 
+void LCDClearScreen(void)
+{
+	uint16_t i;
+	
+	LCDBusWrite(0x50, 0x0000); // Horizontal Start Address = 0
+	LCDBusWrite(0x51, 0x00EF); // Horizontal End Address = 239 pixels
+	LCDBusWrite(0x52, 0x0000); // Vertical Start Address = 0
+	LCDBusWrite(0x53, 0x013F); // Vertical End Address = 319 pixels
+	
+	LCDBusWrite(0x20, 0x0000); // AD[7:0] = 0
+//	LCDBusWrite(0x21, 0x0000); // AD[15:8] = 0 (UNUSED!)
+
+	PORTx_SET_BIT_LOW(PORTC, LCDPinout.CS);
+	LCDBusWriteRegister(0x22); // Set GRAM Write register
+	for(i = 0; i < 320; i++)
+	{
+		LCDBusWriteData(0xF8);
+	}
+	
+	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.CS);
+}
+
+/*void drawHLine(int x, int y, int l)
+{
+	if (l < 0)
+	{
+		l = -l;
+		x -= l;
+	}
+	
+	setXY(x, y, x+l, y);
+	
+	if(fch == fcl)
+	{
+		sbi(P_RS, B_RS);
+		_fast_fill_8(fch,l);
+	}
+	else
+	{
+		for (int i=0; i<l+1; i++)
+		{
+			LCD_Write_DATA(fch, fcl);
+		}
+	}
+	sbi(P_CS, B_CS);
+	clrXY();
+}*/
+
 int main(void)
 {	
 	setClockTo32MHz();
 	
 	LCDInit();
 	
-	PORTx_SET_BIT_AS_OUTPUT(PORTR, PORTR0);
-	
-	
-	
-	/*LCDBusWrite(LCD_DRIVER_OUTPUT_CONTROL_REGISTER, 0x0100);
-	
-	LCDBusWrite(LCD_ENTRY_MODE_REGISTER, 0x0030); // I/D[1:0] = 11b
-	
-	LCDBusWrite(0x0C, 0x0003);  // We are NOT using RGB interface!*/
-	
-	UTFTStartup();
-	
-	
+	LCDClearScreen();
+		
     while(1)
     {
+		LCDClearScreen();
 		_delay_ms(500);
 		PORTx_SET_BIT_HIGH(PORTR, PORTR0);
 		//LCDBusWrite(0x07, 0x0000);
