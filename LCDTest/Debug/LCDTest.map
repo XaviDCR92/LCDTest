@@ -170,7 +170,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0x706
+.text           0x00000000      0x71e
  *(.vectors)
  .vectors       0x00000000      0x1fc c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1056/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avrxmega6/crtx256a3bu.o
                 0x00000000                __vector_default
@@ -355,22 +355,22 @@ END GROUP
                 0x00000222                . = ALIGN (0x2)
  *(.text.*)
  .text.LCDBusWriteRegister
-                0x00000222       0xb4 LCDTest.o
+                0x00000222       0xa0 LCDTest.o
  .text.LCDBusWriteData
-                0x000002d6       0x32 LCDTest.o
+                0x000002c2       0x56 LCDTest.o
  .text.LCDBusWrite
-                0x00000308       0x7a LCDTest.o
+                0x00000318       0x26 LCDTest.o
  .text.LCDClearScreen
-                0x00000382       0x6e LCDTest.o
-                0x00000382                LCDClearScreen
+                0x0000033e       0x3c LCDTest.o
+                0x0000033e                LCDClearScreen
  .text.startup.main
-                0x000003f0      0x312 LCDTest.o
-                0x000003f0                main
-                0x00000702                . = ALIGN (0x2)
+                0x0000037a      0x3a0 LCDTest.o
+                0x0000037a                main
+                0x0000071a                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x00000702        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1056/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avrxmega6\libgcc.a(_exit.o)
-                0x00000702                _exit
-                0x00000702                exit
+ .fini9         0x0000071a        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1056/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avrxmega6\libgcc.a(_exit.o)
+                0x0000071a                _exit
+                0x0000071a                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -389,11 +389,11 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x00000702        0x4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1056/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avrxmega6\libgcc.a(_exit.o)
+ .fini0         0x0000071a        0x4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1056/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avrxmega6\libgcc.a(_exit.o)
  *(.fini0)
-                0x00000706                _etext = .
+                0x0000071e                _etext = .
 
-.data           0x00802000        0x0 load address 0x00000706
+.data           0x00802000        0x0 load address 0x0000071e
                 0x00802000                PROVIDE (__data_start, .)
  *(.data)
  .data          0x00802000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1056/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avrxmega6/crtx256a3bu.o
@@ -416,8 +416,8 @@ END GROUP
                 0x00802000        0x7 LCDTest.o
  *(COMMON)
                 0x00802007                PROVIDE (__bss_end, .)
-                0x00000706                __data_load_start = LOADADDR (.data)
-                0x00000706                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x0000071e                __data_load_start = LOADADDR (.data)
+                0x0000071e                __data_load_end = (__data_load_start + SIZEOF (.data))
 
 .noinit         0x00802007        0x0
                 0x00802007                PROVIDE (__noinit_start, .)
@@ -491,30 +491,30 @@ END GROUP
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000      0xeb7
+.debug_info     0x00000000      0xf02
  *(.debug_info .gnu.linkonce.wi.*)
- .debug_info    0x00000000      0xeb7 LCDTest.o
+ .debug_info    0x00000000      0xf02 LCDTest.o
 
-.debug_abbrev   0x00000000      0x24b
+.debug_abbrev   0x00000000      0x263
  *(.debug_abbrev)
- .debug_abbrev  0x00000000      0x24b LCDTest.o
+ .debug_abbrev  0x00000000      0x263 LCDTest.o
 
-.debug_line     0x00000000      0x5e0
+.debug_line     0x00000000      0x606
  *(.debug_line .debug_line.* .debug_line_end)
- .debug_line    0x00000000      0x5e0 LCDTest.o
+ .debug_line    0x00000000      0x606 LCDTest.o
 
-.debug_frame    0x00000000       0xc8
+.debug_frame    0x00000000       0x94
  *(.debug_frame)
- .debug_frame   0x00000000       0xc8 LCDTest.o
+ .debug_frame   0x00000000       0x94 LCDTest.o
 
 .debug_str      0x00000000    0x184b8
  *(.debug_str)
  .debug_str     0x00000000    0x184b8 LCDTest.o
                               0x189ac (size before relaxing)
 
-.debug_loc      0x00000000      0x22b
+.debug_loc      0x00000000      0x1d6
  *(.debug_loc)
- .debug_loc     0x00000000      0x22b LCDTest.o
+ .debug_loc     0x00000000      0x1d6 LCDTest.o
 
 .debug_macinfo
  *(.debug_macinfo)

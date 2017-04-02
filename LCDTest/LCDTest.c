@@ -5,20 +5,29 @@
  *  Author: Xavi
  */ 
 
-/*LCD_RS -> A5
-LCD_WR -> A4
-LCD_RD -> 3V3
+/*
+*******************
+Extracted from "http://rlx.sk/en/display-boards-lcd-tft-oled-e-paper/2323-tft-lcd-28-touch-for-arduino-uno-mega-shield-im120417020.html"
+*******************
+
 DB8 -> D0
 DB9 -> D1
 DB10 -> D2
-Touch_CLK -> A1
 DB11 -> D3
-Touch_CS -> GND
 DB12 -> D4
-Touch_DIN -> A0
-DB13 -> D15
+DB13 -> D5
 DB14 -> D6
-LCD_CS -> A3*/
+
+Touch_CS -> GND
+Touch_DIN -> A0
+Touch_CLK -> A1
+
+LCD_RD -> 3V3
+LCD_CS -> A3
+LCD_WR -> A4
+LCD_RS -> A5
+
+*/
 
 /*
 	PORTC0 (SDA) -> A3 -> LCD_CS
@@ -87,6 +96,8 @@ static TYPE_LCD_PINOUT LCDPinout;
 
 void LCDInit(void)
 {
+	uint8_t i;
+	
 	LCDPinout.CS = PORTC0;
 	LCDPinout.WR = PORTC1;
 	LCDPinout.RS = PORTC2;
@@ -102,7 +113,17 @@ void LCDInit(void)
 	PORTx_SET_BIT_AS_OUTPUT(PORTC, LCDPinout.RS);
 	PORTx_SET_BIT_AS_OUTPUT(PORTC, LCDPinout.RESET);
 	
+	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.CS);
+	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.RS);
+	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.WR);
+	PORTx_SET_BIT_LOW(PORTC, LCDPinout.RESET);
+	
 	PORTx_SET_BITS_AS_OUTPUT(PORTA, 0xFF);
+	
+	for(i = 0; i < 8; i++)
+	{
+		PORTx_SET_BIT_LOW(PORTA, i);
+	}
 	
 	//PORTC.OUTSET = 0xFF;
 	
@@ -138,39 +159,53 @@ void LCDInit(void)
 				// LCD power supply circuit.*/
 }
 
+// ***********************************************************
+// ***********************************************************
+// *@fn: void LCDBusWriteRegister(uint8_t reg)
+// *
+// *@brief: Sets Index Register. Used in LCDBusWrite() calls.
+// ***********************************************************
+// ***********************************************************
+
 void LCDBusWriteRegister(uint8_t reg)
 {
 	PORTx_SET_BIT_LOW(PORTC, LCDPinout.RS);
 	
-	PORTA.OUTSET = 0x00; // MSB for index register must be set to 0x00
+	PORTA.OUTCLR = 0xFF; // MSB for index register must be set to 0x00
 	
-	PORTx_SET_BIT_LOW(PORTR, PORTR1);	// Turn LED1 OFF before transfer
 	// Low pulse
 	PORTx_SET_BIT_LOW(PORTC, LCDPinout.WR);
 	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.WR);
 	
+	PORTA.OUTCLR = ~(reg);
 	PORTA.OUTSET = reg;
 	
-	PORTx_SET_BIT_HIGH(PORTR, PORTR1);	// Turn LED1 ON during transfer
+	PORTx_SET_BIT_LOW(PORTR, PORTR1);	// Turn LED1 ON during transfer
 	// Low pulse
 	PORTx_SET_BIT_LOW(PORTC, LCDPinout.WR);
 	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.WR);
+	
+	PORTx_SET_BIT_HIGH(PORTR, PORTR1);	// Turn LED1 OFF during transfer
 	
 	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.RS); // Finished writing index register
 }
 
 void LCDBusWriteData(uint8_t data)
 {
+	PORTx_SET_BIT_LOW(PORTR, PORTR1);	// Turn LED1 ON during transfer
+	
+	PORTA.OUTCLR = ~(data);
 	PORTA.OUTSET = data;
 	// Low pulse
 	PORTx_SET_BIT_LOW(PORTC, LCDPinout.WR);
 	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.WR);
+	
+	PORTx_SET_BIT_HIGH(PORTR, PORTR1);	// Turn LED1 OFF during transfer
 }
 
 void LCDBusWrite(uint8_t reg, uint16_t data)
 {
-	PORTx_SET_BIT_LOW(PORTC, LCDPinout.CS);
-	//PORTx_SET_BITS_AS_OUTPUT(PORTA, 0xFF /* All bits as output */);
+	//PORTx_SET_BIT_LOW(PORTC, LCDPinout.CS);
 	
 	// Now write to register index!
 	
@@ -184,7 +219,7 @@ void LCDBusWrite(uint8_t reg, uint16_t data)
 	// MSB Data
 	LCDBusWriteData((uint8_t) (data & 0x00FF));
 	
-	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.CS);
+	//PORTx_SET_BIT_HIGH(PORTC, LCDPinout.CS);
 }
 
 void setClockTo32MHz(void)
@@ -265,22 +300,19 @@ void LCDClearScreen(void)
 {
 	uint16_t i;
 	
+	LCDBusWrite(0x20, 0x0000); // AD[7:0] = 0
+	LCDBusWrite(0x21, 0x0000); // AD[15:8] = 0 (UNUSED!)
+	
 	LCDBusWrite(0x50, 0x0000); // Horizontal Start Address = 0
-	LCDBusWrite(0x51, 0x00EF); // Horizontal End Address = 239 pixels
 	LCDBusWrite(0x52, 0x0000); // Vertical Start Address = 0
+	LCDBusWrite(0x51, 0x00EF); // Horizontal End Address = 239 pixels
 	LCDBusWrite(0x53, 0x013F); // Vertical End Address = 319 pixels
 	
-	LCDBusWrite(0x20, 0x0000); // AD[7:0] = 0
-//	LCDBusWrite(0x21, 0x0000); // AD[15:8] = 0 (UNUSED!)
-
-	PORTx_SET_BIT_LOW(PORTC, LCDPinout.CS);
 	LCDBusWriteRegister(0x22); // Set GRAM Write register
-	for(i = 0; i < 320; i++)
-	{
-		LCDBusWriteData(0xF8);
-	}
+	LCDBusWriteData(0xFF);
+	LCDBusWriteData(0xFF);
 	
-	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.CS);
+	//PORTx_SET_BIT_HIGH(PORTC, LCDPinout.CS);
 }
 
 /*void drawHLine(int x, int y, int l)
@@ -313,13 +345,14 @@ int main(void)
 {	
 	setClockTo32MHz();
 	
+	PORTx_SET_BIT_LOW(PORTC, LCDPinout.CS);
+	
 	LCDInit();
 	
 	LCDClearScreen();
 		
     while(1)
     {
-		LCDClearScreen();
 		_delay_ms(500);
 		PORTx_SET_BIT_HIGH(PORTR, PORTR0);
 		//LCDBusWrite(0x07, 0x0000);
@@ -327,4 +360,6 @@ int main(void)
 		PORTx_SET_BIT_LOW(PORTR, PORTR0);
 		//LCDBusWrite(0x07, 0x0002);
     }
+	
+	PORTx_SET_BIT_HIGH(PORTC, LCDPinout.CS);
 }
